@@ -1,80 +1,64 @@
-from flask import Flask, render_template_string, request, redirect, url_for  
+from flask import Flask, render_template_string  
+import random  
+import time  
   
 app = Flask(__name__)  
   
-# --- HTML TEMPLATES (Sab ek hi file mein) ---  
-  
-# 1. LOGIN PAGE  
-LOGIN_HTML = """  
-<!DOCTYPE html>  
-<html>  
-<head>  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>BharatLuck Login</title>  
-    <style>  
-        body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 100px; }  
-        .login-card { background: #1e1e1e; padding: 30px; border-radius: 15px; display: inline-block; border: 1px solid #ffd700; width: 80%; max-width: 350px; }  
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; }  
-        button { background: #ffd700; color: black; padding: 12px; width: 95%; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }  
-    </style>  
-</head>  
-<body>  
-    <div class="login-card">  
-        <h2 style="color:#ffd700">👑 BHARATLUCK VIP</h2>  
-        <p>Login with Phone Number</p>  
-        <form action="/login" method="POST">  
-            <input type="text" name="phone" placeholder="Phone Number" required>  
-            <input type="password" name="otp" placeholder="Enter PIN" required>  
-            <button type="submit">LOGIN NOW</button>  
-        </form>  
-    </div>  
-</body>  
-</html>  
-"""  
-  
-# 2. GAME PAGE  
-GAME_HTML = """  
-<!DOCTYPE html>  
-<html>  
-<head>  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Dashboard</title>  
-    <style>  
-        body { background: #0f0f0f; color: white; font-family: sans-serif; text-align: center; margin: 0; }  
-        .header { background: #1e1e1e; padding: 20px; border-bottom: 2px solid #ffd700; }  
-        .balance-card { background: linear-gradient(135deg, #ffd700, #b8860b); color: black; margin: 20px auto; padding: 20px; border-radius: 15px; width: 85%; }  
-        .btn-grid { display: flex; justify-content: space-around; padding: 20px; }  
-        .btn { padding: 20px 40px; border-radius: 10px; border: none; font-weight: bold; font-size: 20px; color: white; cursor: pointer; }  
-        .big { background: #2ecc71; }  
-        .small { background: #ff4d4d; }  
-    </style>  
-</head>  
-<body>  
-    <div class="header"><h3>👑 VIP DASHBOARD</h3></div>  
-    <div class="balance-card">  
-        <p>Total Balance</p>  
-        <h1 id="balance">₹500.00</h1>  
-    </div>  
-    <div style="background:#1e1e1e; padding: 20px; margin: 10px; border-radius: 10px;">  
-        <p style="color:#aaa">NEXT PREDICTION</p>  
-        <h2 style="color:#ffd700; font-size: 40px;">BIG</h2>  
-    </div>  
-    <div class="btn-grid">  
-        <button class="btn big" onclick="alert('Bet Placed on BIG!')">BIG</button>  
-        <button class="btn small" onclick="alert('Bet Placed on SMALL!')">SMALL</button>  
-    </div>  
-</body>  
-</html>  
-"""  
-  
+# --- SINGLE MACHINE ENGINE ---  
 @app.route('/')  
-def index():  
-    return render_template_string(LOGIN_HTML)  
+def machine_game():  
+    # Machine logic: Random number 0-9  
+    num = random.randint(0, 9)  
+    # 0-4 Small, 5-9 Big  
+    result = "BIG" if num >= 5 else "SMALL"  
+    color = "#2ecc71" if result == "BIG" else "#ff4d4d"  
   
-@app.route('/login', methods=['POST'])  
-def login():  
-    # Abhi ke liye koi bhi phone/pin chal jayega  
-    return render_template_string(GAME_HTML)  
+    html_code = f"""  
+    <!DOCTYPE html>  
+    <html>  
+    <head>  
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+        <title>BHARATLUCK MACHINE</title>  
+        <style>  
+            body {{ background: #0a0a0a; color: white; font-family: 'Courier New', monospace; text-align: center; margin: 0; }}  
+            .machine-body {{ border: 4px solid #ffd700; margin: 20px auto; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; background: #1a1a1a; box-shadow: 0 0 30px #ffd70055; }}  
+            .screen {{ background: #000; border: 2px inset #444; padding: 20px; border-radius: 10px; margin-bottom: 20px; }}  
+            .number {{ font-size: 80px; color: #ffd700; text-shadow: 0 0 15px #ffd700; }}  
+            .prediction {{ font-size: 30px; color: {color}; font-weight: bold; border-top: 1px solid #333; padding-top: 10px; }}  
+            .timer {{ color: #00ff00; font-size: 18px; margin-top: 10px; }}  
+            .btn {{ background: #ffd700; color: black; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 18px; box-shadow: 0 5px #b8860b; }}  
+            .btn:active {{ transform: translateY(3px); box-shadow: none; }}  
+        </style>  
+    </head>  
+    <body>  
+        <h2 style="color:#ffd700; margin-top:30px;">👑 BHARATLUCK AI MACHINE</h2>  
+        <div class="machine-body">  
+            <div class="screen">  
+                <div class="timer" id="timer">NEXT DRAW IN: 15s</div>  
+                <div class="number" id="num">{num}</div>  
+                <div class="prediction">{result}</div>  
+            </div>  
+            <p style="color:#888;">Wallet Balance: <span style="color:#fff;">₹500.00</span></p>  
+            <button class="btn" onclick="location.reload()">SPIN MACHINE</button>  
+        </div>  
+        <p style="font-size:12px; color:#444; margin-top:20px;">Powered by BharatLuck AI Engine v1.0</p>  
+          
+        <script>  
+            // Chota sa timer script  
+            let timeLeft = 15;  
+            setInterval(() => {{  
+                if(timeLeft > 0) {{  
+                    timeLeft--;  
+                    document.getElementById('timer').innerHTML = "NEXT DRAW IN: " + timeLeft + "s";  
+                }} else {{  
+                    location.reload(); // Time khatam hote hi machine apne aap ghumegi  
+                }}  
+            }}, 1000);  
+        </script>  
+    </body>  
+    </html>  
+    """  
+    return render_template_string(html_code)  
   
 if __name__ == '__main__':  
     import os  
