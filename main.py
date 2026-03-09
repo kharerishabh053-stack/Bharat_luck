@@ -1,6 +1,6 @@
 from flask import Flask, render_template_string  
 import random  
-import time  
+import time 
   
 app = Flask(__name__)  
   
